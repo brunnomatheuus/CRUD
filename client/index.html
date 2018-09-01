@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<!--<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Loopback With Vue.js</title>
+</head>
+<body>
+    <div id="app">
+        <ul>
+            <li v-for="tarefa in tarefas">
+                <h2>{{tarefa.titulo}}</h2>
+                <h2>{{tarefa.descricao}}</h2>
+                <h3 v-if="tarefa.status === 'true'">Ok</h3>
+                <h3 v-else>Not-Ok</h3>
+            </li>
+        </ul>
+    </div>
+
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.18.0/axios.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.5.17/dist/vue.min.js"></script>
+
+    <script>
+        var app = new Vue({
+            el: '#app',
+            data: {
+                tarefas: []
+            },
+            mounted() {
+                axios.get('api/tarefas').then((response) => {
+                    this.tarefas = response.data
+                    console.log(this.tarefas)
+                })
+            }
+        })
+    </script>
+</body>
+</html>-->
+
+<!DOCTYPE html>
+<html lang="pt-br">
+  <head>
+    <link href='https://fonts.googleapis.com/css?family=Roboto:300,400,500,700|Material+Icons' rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/vuetify/dist/vuetify.min.css" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, minimal-ui">
+    <title>Loopback</title>
+    <link rel='stylesheet' href='style.css' />
+  </head>
+  <body>
+    <header id="app">
+      <v-toolbar dark color="deep-purple">
+
+        <v-toolbar-title>{{ title }}</v-toolbar-title>
+      </v-toolbar>
+    </header>
+
+    <div id="form">
+      <v-app id="inspire">
+        <v-flex d-flex>
+            <div style="max-width: 30%;" class="grey lighten-1">
+              <v-form class="pa-3" ref="form" v-model="valid">
+                <v-text-field
+                  v-model="titulo"
+                  label="Título"
+                  :rules="tituloRules"
+                  required
+                  outline
+                ></v-text-field>
+                
+                <v-divider class="black mb-4"></v-divider>
+    
+                <v-textarea
+                  v-model="descricao"
+                  label="Descrição"
+                  :rules="descricaoRules"
+                  required
+                  outline
+                ></v-textarea>
+            
+                <v-btn class="indigo white--text" v-on:click="addTarefa"> Cadastrar </v-btn>
+              </v-form>
+            </div>
+
+            <div class="grey pa-3">
+              <v-list class="grey" two-line subheader v-for="tarefa in tarefas">
+                <v-list-tile> 
+                  <v-list-tile-content>
+                    <h3><v-list-tile-title>{{ tarefa.titulo }}</v-list-tile-title></h3>
+                    <b><v-list-tile-sub-title class="grey lighten-5--text">{{ tarefa.descricao }}</v-list-tile-sub-title></b>
+                  </v-list-tile-content>
+      
+                  <div>
+                    <v-btn class="indigo white--text" v-if="tarefa.status == true" v-on:click="mudaEstado(tarefa)" >Ok</v-btn>
+                    <v-btn class="red white--text" v-else v-on:click="mudaEstado(tarefa)">Not-Ok</v-btn>
+                    <v-btn class="red" v-on:click="deleta(tarefa)">delete</v-btn>
+                  </div>
+                </v-list-tile>
+                <v-divider class="black"></v-divider>
+              </v-list>
+            </div>
+        </v-flex>
+      </v-app>
+    </div>
+
+
+
+    <script src="//cdnjs.cloudflare.com/ajax/libs/vue/2.1.6/vue.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.5.17/dist/vue.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vuetify/dist/vuetify.js"></script>
+    <script src="node_modules/vue-resource/dist/vue-resource.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.18.0/axios.min.js"></script>
+
+    <script>
+
+      var form = new Vue({
+        el: '#form',
+        data() {
+          return{
+            drawer: true,
+            tituloRules: [
+            v => !!v || 'Título é necessário'
+            ],
+            descricaoRules: [
+              v => !!v || 'Descrição é necessária'
+            ],
+            tarefas: [],
+            titulo: '',
+            descricao: '',
+            status: false
+          }
+        },
+        mounted() {
+            axios.get('api/tarefas').then((response) => {
+                this.tarefas = response.data
+                console.log(this.tarefas)
+            })
+        },
+        methods: {
+          addTarefa() {
+            const data = {
+                titulo: this.titulo,
+                descricao: this.descricao,
+                status: false
+            }
+
+            axios.post('api/tarefas', data).then(function (response) {
+                console.log(response);
+                location.reload();
+            })
+            .catch(function (error) {
+                console.log(error, 'nao funcionou');
+            });
+          },
+
+          mudaEstado(tarefa) {
+            const id = tarefa.id
+            const status = !tarefa.status;
+            axios.patch('api/tarefas/'+id, {"status":status}).then((response) => {
+              console.log(response)
+              location.reload()
+            })
+            .catch(function(error){
+              console.log(error, 'não mudou')
+            })
+          },
+
+          deleta(tarefa){
+            const id = tarefa.id;
+            axios.delete('api/tarefas/'+id).then((response) => {
+              console.log(response)
+              location.reload();
+            })
+            .catch(function (error){
+              console.log(error, 'não funcionou')
+            })
+          }
+        }
+      });
+
+      var app = new Vue({
+        el: "#app",
+        data(){
+          return{
+            title: "Loopback com Vue.js"
+          }
+        }
+      });
+
+    </script>
+  </body>
+</html>
